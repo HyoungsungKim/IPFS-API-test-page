@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+ ipfs:
+  build: Private-IPFS/.
+  #image: ipfs/kubo
+  restart: unless-stopped
+  environment:
+    - IPFS_PATH=/app
+    - LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:/usr/lib64:/usr/lib
+  working_dir: /app
+  networks:
+    ipfs_network:
+      ipv4_address: 172.20.0.1
+    #testPage_network:
+    #  ipv4_address: 172.25.0.1
+  ports:
+    # Swarm listens on all interfaces, so is remotely reachable.
+    - 4001:4001/tcp
+    - 4001:4001/udp
+    
+    # The following ports only listen on the loopback interface, so are not remotely reachable by default.
+    # If you want to override these or add more ports, see https://docs.docker.com/compose/extends/ .
+    
+    # API port, which includes admin operations, so you probably don't want this remotely accessible.
+    #- 127.0.0.1:5001:5001
+    - 5001:5001    
+    
+    # HTTP Gateway
+    # - 127.0.0.1:8080:8080
+    - 8080:8080
+  volumes:
+    - ./Private-IPFS/.:/app
+    #- ./data:/app/data
+    #- ./ipfs_fuse:/app/ipfs
+    #- ./ipfs_staging:/app/staging
+    #- ./ipns_fuse:/app/ipns
+  stdin_open: true
+  tty: true
+
+
+ front:
+  build: Test-Page/.
+  working_dir: /app
+  networks:
+    ipfs_network:
+      ipv4_address: 172.20.0.3
+    #testPage_network:
+    #  ipv4_address: 172.25.0.3
+  ports:
+    - 8000:8000    
+    - 3000:3000    
+  volumes:
+   - ./Test-Page/.:/app
+  stdin_open: true
+  tty: true
+  
+
+
+networks:
+  ipfs_network:
+   ipam:
+    config:
+    - subnet: 172.20.0.0/16
+      gateway: 172.20.1.1
+      
+  #testPage_network:
+  # ipam:
+  #  config:
+  #   - subnet: 172.25.0.0/16
+  #     gateway: 172.25.1.1

@@ -1,0 +1,19 @@
+FROM debian:latest
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y wget gnupg2 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set IPFS_PATH environment variable
+
+# Add IPFS repository and install IPFS
+RUN wget https://dist.ipfs.tech/kubo/v0.20.0/kubo_v0.20.0_linux-amd64.tar.gz && \
+    tar -xvzf kubo_v0.20.0_linux-amd64.tar.gz && \
+    cd kubo && \
+    ./install.sh && \
+    cd .. && \
+    rm -rf kubo_v0.20.0_linux-amd64.tar.gz kubo
+
+# Set API_ADDRESS to bind to all network interfaces
+
