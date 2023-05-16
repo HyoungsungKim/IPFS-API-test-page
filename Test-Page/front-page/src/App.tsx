@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Box, Button, Container, Chip, Divider, Grid, Paper, Stack, TextField, Typography } from '@mui/material';
-import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import { AppBar, Box, Button, Container, Chip, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Tooltip } from '@mui/material';
+
 
 import { CreateTabPanel } from './create/createView';
 import type { IPFSHTTPClient } from "ipfs-http-client";
-//import type {MFSEntry} from "ipfs-core-types/src/files"
-
+import type { IPFSEntry } from "ipfs-core-types/src/root"
 
 import { getIpfsClient } from "./common/connectIPFS";
-import { loadCidList } from "./common/loadCidList"
+import { lsCids } from "./common/lsCids"
 
-interface commonProps {
+interface CommonProps {
 	ipfs: IPFSHTTPClient | undefined
 	setIpfs: React.Dispatch<React.SetStateAction<IPFSHTTPClient | undefined>>
+}
+
+interface ControllerProps extends CommonProps {
+	setCids: React.Dispatch<React.SetStateAction<string[] | undefined>>
+}
+
+interface ViewProps extends CommonProps {
+	cids: string[] | undefined
 }
 
 function App() {
@@ -26,6 +35,7 @@ function Layout(): JSX.Element {
 	const [loading, setLoading] = useState(false)
 	const [success, setSuccess] = useState(true)
 	const [ipfs, setIpfs] = useState<IPFSHTTPClient | undefined>(undefined)
+	const [cids, setCids] = useState<string[] | undefined>([])
 
 	useEffect(() => {
 		setSuccess(!loading)
@@ -52,11 +62,11 @@ function Layout(): JSX.Element {
 
 			<Grid container >
 				<Grid item xs={6}>
-					<Controller ipfs={ipfs} setIpfs={setIpfs} />
+					<Controller ipfs={ipfs} setIpfs={setIpfs} setCids={setCids} />
 				</Grid>
 
 				<Grid item xs={6}>
-					<View ipfs={ipfs} setIpfs={setIpfs} />
+					<View ipfs={ipfs} setIpfs={setIpfs} cids={cids} />
 				</Grid>
 			</Grid>
 
@@ -64,10 +74,10 @@ function Layout(): JSX.Element {
 	)
 }
 
-function Controller(props: commonProps): JSX.Element {
-	const { ipfs, setIpfs } = props
-	// 도커 ip로 하면 연결안됨 -> 서버 IP 주소 사용해야함
-	const [ipfsAddress, setIpfsAddress] = useState<string>("http://10.252.107.31:5001") //process.env.REACT_APP_IPFS_ADDRESS_PORT?.toString() ?? "http://localhost:5001")
+function Controller(props: ControllerProps): JSX.Element {
+	const { ipfs, setIpfs, setCids } = props
+	// Use a server IP instead of a docker ip
+	const [ipfsAddress, setIpfsAddress] = useState<string>(process.env.REACT_APP_IPFS_ADDRESS_PORT ? process.env.REACT_APP_IPFS_ADDRESS_PORT : "http://localhost:5001")
 	const [ipfsOnline, setIpfsOnline] = useState<boolean>(false)
 
 	useEffect(() => {
@@ -90,7 +100,7 @@ function Controller(props: commonProps): JSX.Element {
 					</Typography>
 				</Box>
 
-				<CreateTabPanel ipfs={ipfs} />
+				<CreateTabPanel ipfs={ipfs} setCids={setCids} />
 				<Divider />
 
 			</Paper>
@@ -99,45 +109,61 @@ function Controller(props: commonProps): JSX.Element {
 }
 
 
-function View(props: commonProps): JSX.Element {
-	const { ipfs, setIpfs } = props
-	/*
-	const [fileList, setFileList] = useState<MFSEntry[]>([]);
-	
+function View(props: ViewProps): JSX.Element {
+	const { ipfs, setIpfs, cids } = props;
+
+	const [lsCidsResult, setLsCidsResult] = useState<IPFSEntry[]>([]);
+
 	useEffect(() => {
-		const loadFiles = async () => {
-		  try {
-			if (ipfs) {
-			  const files = await ipfs.files.ls("/");
-			  const fileList: MFSEntry[] = [];
-			  for await (const file of files) {
-				fileList.push({
-				  name: file.name,
-				  type: file.type,
-				  cid: file.cid,
-				  size: file.size,
-				  mode: file.mode,
-				  mtime: file.mtime,	
-				});
-			  }
-			  setFileList(fileList);
+		const fetchResults = async () => {
+			if (ipfs && cids) {
+				const results = await lsCids(ipfs, cids);
+				setLsCidsResult(results);
 			}
-		  } catch (err: unknown) {
-			console.error("Failed to load files:", err);
-		  }
 		};
-	  
-		loadFiles();
-	  }, [ipfs]);
-*/
+
+		fetchResults();
+	}, [ipfs, cids]);
+
+	const CidTables = (): JSX.Element => {
+		return (
+			<TableContainer component={Paper}>
+				<Table>
+					<TableHead>
+						<TableRow>
+							<TableCell>Name</TableCell>
+							<TableCell>Path</TableCell>
+						</TableRow>
+					</TableHead>
+					<TableBody>
+						{lsCidsResult.map((lsCid: IPFSEntry) => (
+							<TableRow key={lsCid.path}>
+								<TableCell>{lsCid.name}</TableCell>
+								<TableCell>
+									<Tooltip title={<img src={"https://ipfs.io/ipfs/" + lsCid.path} alt={lsCid.name} />} placement="top">
+										<a href={`https://ipfs.io/ipfs/${lsCid.path}`} target="_blank" rel="noopener noreferrer">
+											{lsCid.path}
+										</a>
+									</Tooltip>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</TableContainer>
+		)
+	}
+
+
 	return (
 		<Container component="div" maxWidth="lg" sx={{ mb: 4 }}>
 			<Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
-
+				<CidTables />
 			</Paper>
 		</Container>
-	)
+	);
 }
+
 
 
 export default App;

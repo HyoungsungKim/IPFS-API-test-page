@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -17,8 +16,9 @@ interface TabPanelProps {
     value: number;
 }
 
-interface ipfsProps {
+interface CreateTabProps {
     ipfs: IPFSHTTPClient | undefined
+    setCids: React.Dispatch<React.SetStateAction<string[] | undefined>>
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -52,13 +52,12 @@ function a11yProps(index: number) {
     };
 }
 
-export function CreateTabPanel(props: ipfsProps): JSX.Element {
-    const { ipfs } = props
+export function CreateTabPanel(props: CreateTabProps): JSX.Element {
+    const { ipfs, setCids } = props
     const [value, setValue] = useState(0);
 
 
-    const [contentFile, setContentFile] = useState<Blob | undefined>()
-    const [cid, setCid] = useState<string | undefined>()
+    const [file, setFile] = useState<File | null>(null)    
 
 
 
@@ -70,7 +69,7 @@ export function CreateTabPanel(props: ipfsProps): JSX.Element {
         <Box sx={{ width: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label="Upload PNG/JPEG" {...a11yProps(0)} />
+                    <Tab label="Upload" {...a11yProps(0)} />
                     <Tab label="Item Two" {...a11yProps(1)} />
                     <Tab label="Item Three" {...a11yProps(2)} />
                 </Tabs>
@@ -80,11 +79,11 @@ export function CreateTabPanel(props: ipfsProps): JSX.Element {
             <TabPanel value={value} index={0}>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} sm={6}>
-                        <FileLoaderButton setFile={setContentFile} fullWidth />
+                        <FileLoaderButton setFile={setFile} fullWidth />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                        {contentFile && ipfs ? (
-                            <FileUploaderButton ipfs={ipfs} fileBlob={contentFile} setCid={setCid} fullWidth />
+                        {file && ipfs ? (
+                            <FileUploaderButton ipfs={ipfs} file={file} setCids={setCids} fullWidth />
                         ) :
                             <Button disabled fullWidth>Upload to IPFS</Button>
                         }
