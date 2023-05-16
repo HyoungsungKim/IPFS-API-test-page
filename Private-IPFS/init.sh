@@ -5,7 +5,7 @@ apt-get update
 set -e
 
 if [ ! -d "config" ]; then
-  echo "Already exist config"  
+  echo "Already config file exists"  
   #chmod 777 cors-origin.sh
   #./cors-origin.sh
   ipfs daemon --init-config=config
