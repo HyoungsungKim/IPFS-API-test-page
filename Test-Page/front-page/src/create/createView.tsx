@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 
-import { FileLoaderButton, FileUploaderButton } from "./utils";
+import { FileLoaderButton, FileUploaderButton, UploadFileAndMetadataForm } from "./utils";
 
 import type { IPFSHTTPClient } from "ipfs-http-client";
 
@@ -69,8 +69,8 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
         <Box sx={{ width: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label="Upload" {...a11yProps(0)} />
-                    <Tab label="Item Two" {...a11yProps(1)} />
+                    <Tab label="Upload File" {...a11yProps(0)} />
+                    <Tab label="Upload image and Metadata" {...a11yProps(1)} />
                     <Tab label="Item Three" {...a11yProps(2)} />
                 </Tabs>
             </Box>
@@ -92,7 +92,18 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
             </TabPanel>
 
             <TabPanel value={value} index={1}>
-                Item Two
+            <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={6}>
+                        <FileLoaderButton setFile={setFile} fullWidth />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        {file && ipfs ? (
+                            <UploadFileAndMetadataForm ipfs={ipfs} file={file} setCids={setCids} fullWidth />
+                        ) :
+                            <Button disabled fullWidth>Upload to IPFS</Button>
+                        }
+                    </Grid>
+                </Grid>
             </TabPanel>
             <TabPanel value={value} index={2}>
                 Item Three
