@@ -38,7 +38,6 @@ services:
   stdin_open: true
   tty: true
 
-
  front:
   build: Test-Page/.
   working_dir: /app
@@ -54,6 +53,39 @@ services:
    - ./Test-Page/.:/app
   stdin_open: true
   tty: true
+  
+ proxy-server:
+  build: Proxy-server/.
+  working_dir: /app
+  networks:
+    ipfs_network:
+      ipv4_address: 172.20.0.5
+    #testPage_network:
+    #  ipv4_address: 172.25.0.5
+  ports:
+    # Default port of rqlite is 4001
+    - 8005:3000
+  volumes:
+   - ./Proxy-server/.:/app
+  stdin_open: true
+  tty: true
+
+  
+#  db:
+#   build: rqlite-db/.
+#   working_dir: /app
+#   networks:
+#     ipfs_network:
+#       ipv4_address: 172.20.0.7
+#     #testPage_network:
+#     #  ipv4_address: 172.25.0.7
+#   ports:
+#     # Default port of rqlite is 4001
+#     - 8001:4001
+#   volumes:
+#    - ./rqlite-db/.:/app
+#   stdin_open: true
+#   tty: true
   
 
 
