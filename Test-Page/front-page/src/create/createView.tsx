@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 
 import { FileLoaderButton, FileUploaderButton, UploadFileAndMetadataForm } from "./utils";
+import { FileUploadAPI } from "./API-utils"
 
 import type { IPFSHTTPClient } from "ipfs-http-client";
 
@@ -57,7 +58,7 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
     const [value, setValue] = useState(0);
 
 
-    const [file, setFile] = useState<File | null>(null)    
+    const [file, setFile] = useState<File | null>(null)
 
 
 
@@ -71,7 +72,7 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                     <Tab label="Upload File" {...a11yProps(0)} />
                     <Tab label="Upload image and Metadata" {...a11yProps(1)} />
-                    <Tab label="Item Three" {...a11yProps(2)} />
+                    <Tab label="Upload API test" {...a11yProps(2)} />
                 </Tabs>
             </Box>
 
@@ -92,7 +93,7 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
             </TabPanel>
 
             <TabPanel value={value} index={1}>
-            <Grid container spacing={2} alignItems="center">
+                <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} sm={6}>
                         <FileLoaderButton setFile={setFile} fullWidth />
                     </Grid>
@@ -106,7 +107,18 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
                 </Grid>
             </TabPanel>
             <TabPanel value={value} index={2}>
-                Item Three
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} sm={6}>
+                        <FileLoaderButton setFile={setFile} fullWidth />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        {file && ipfs ? (
+                            <FileUploadAPI ipfs={ipfs} file={file} setCids={setCids} fullWidth />
+                        ) :
+                            <Button disabled fullWidth>Upload to IPFS</Button>
+                        }
+                    </Grid>
+                </Grid>
             </TabPanel>
         </Box>
     );

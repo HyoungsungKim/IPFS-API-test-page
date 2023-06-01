@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppBar, Box, Button, Container, Chip, Divider, Grid, Stack, TextField, Typography } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { Tooltip } from '@mui/material';
-
+import axios from 'axios';
 
 import { CreateTabPanel } from './create/createView';
 import type { IPFSHTTPClient } from "ipfs-http-client";
@@ -10,6 +10,7 @@ import type { IPFSEntry } from "ipfs-core-types/src/root"
 
 import { getIpfsClient } from "./common/connectIPFS";
 import { lsCids } from "./common/lsCids"
+import { resolve } from 'path';
 
 interface CommonProps {
 	ipfs: IPFSHTTPClient | undefined
@@ -78,7 +79,27 @@ function Controller(props: ControllerProps): JSX.Element {
 	const { ipfs, setIpfs, setCids } = props
 	// Use a server IP instead of a docker ip
 	const [ipfsAddress, setIpfsAddress] = useState<string>(process.env.REACT_APP_IPFS_ADDRESS_PORT ? process.env.REACT_APP_IPFS_ADDRESS_PORT : "http://localhost:5001")
+	const [APIserverAddress, setAPIserverAddress] = useState<string>(process.env.REACT_APP_API_SERVER_ADDRESS_PORT ? process.env.REACT_APP_API_SERVER_ADDRESS_PORT : "http://localhost:3005")
+
 	const [ipfsOnline, setIpfsOnline] = useState<boolean>(false)
+	const [APIserverOnline, setAPIserverOnline] = useState<boolean>(false)
+
+	const checkAPIserverOnline = (): Promise<boolean> => {
+		return new Promise(async (resolve) => {
+			try {
+				const response = await axios.get(`${APIserverAddress}/api/v1/api-server-ping`);
+				console.log(response)
+				if (response.status !== 200) {
+					resolve(false);
+				} else {
+					resolve(true);
+				}
+			} catch (err: unknown) {
+				console.error(err);
+				resolve(false);
+			}
+		})
+	}
 
 	useEffect(() => {
 		getIpfsClient(ipfsAddress).then(([client, online]) => {
@@ -87,8 +108,12 @@ function Controller(props: ControllerProps): JSX.Element {
 			if (client) {
 				setIpfs(client);
 			}
+
+			checkAPIserverOnline().then((status) => {
+				setAPIserverOnline(status)
+			})
 		});
-	}, [ipfsAddress]);
+	}, [ipfsAddress, APIserverAddress]);
 
 	return (
 		<Container component="div" maxWidth="lg" sx={{ mb: 4 }}>
@@ -97,6 +122,13 @@ function Controller(props: ControllerProps): JSX.Element {
 					<Chip label={ipfsOnline ? "IPFS online" : "IPFS offline"} color={ipfsOnline ? "success" : "error"} />
 					<Typography variant="body1" sx={{ marginLeft: 1 }}>
 						{ipfsAddress}
+					</Typography>
+				</Box>
+
+				<Box sx={{ borderBottom: 1, borderColor: 'transparent', marginBottom: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+					<Chip label={APIserverOnline ? "API server online" : "API server offline"} color={APIserverOnline ? "success" : "error"} />
+					<Typography variant="body1" sx={{ marginLeft: 1 }}>
+						{APIserverAddress}
 					</Typography>
 				</Box>
 
