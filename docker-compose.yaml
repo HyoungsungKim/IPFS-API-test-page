@@ -54,6 +54,22 @@ services:
   stdin_open: true
   tty: true
   
+ web3-front:
+  build: Test-Page/.
+  working_dir: /app
+  networks:
+    ipfs_network:
+      ipv4_address: 172.20.0.4
+    #testPage_network:
+    #  ipv4_address: 172.25.0.3
+  ports:
+    - 8008:8000
+    - 3001:3000
+  volumes:
+   - ./Web3-Test-Page/.:/app
+  stdin_open: true
+  tty: true
+
  proxy-server:
   build: Proxy-server/.
   working_dir: /app
