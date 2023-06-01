@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getIpfsClient } from "../../../common/connect-IPFS"
 
-//curl -X GET http://localhost:3000/api/v1/ipfs-ping
+//curl -X GET http://localhost:3000/api/v1/api-server-ping
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         const ipfsAddress = process.env.IPFS_ADDRESS

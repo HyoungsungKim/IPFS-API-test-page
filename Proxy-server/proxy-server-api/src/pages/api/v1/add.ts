@@ -10,7 +10,7 @@ export const config = {
   }
 }
 
-// curl -X POST -H "Content-Type: multipart/form-data" -F "file=@./testFile/Lenna.png" -F "json=@./testFile/test.json" http://localhost:3001/api/v1/add
+// curl -X POST -H "Content-Type: multipart/form-data" -F "file=@./testFile/Lenna.png" -F "json=@./testFile/test.json" http://localhost:3000/api/v1/add
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const ipfsAddress = process.env.IPFS_ADDRESS;
   console.log(ipfsAddress);
@@ -47,14 +47,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 
     const { file, json } = files as { file: formidable.File, json: formidable.File };
+    console.log(json)
     const { filepath: filePath } = file
     const fileData = fs.readFileSync(filePath);
     const fileContent = new Blob([fileData], {type: file.mimetype || ''})
 
     const jsonData = JSON.parse(fs.readFileSync((json as File).filepath, 'utf-8'));
-    
-
-    console.log(jsonData);
 
     const addedFile = await ipfs.add({
       path: file.originalFilename || '',
@@ -65,7 +63,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       jsonData.cid = addedFile.cid.toString()
       const metadataJson = {...file.toJSON(), ...jsonData}
       const jsonBuffer = Buffer.from(JSON.stringify(metadataJson));
-
       return await ipfs.add({
         path: `${file.originalFilename}_metadata.json`,
         content: jsonBuffer,
@@ -76,22 +73,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     fs.unlinkSync(filePath);
     fs.unlinkSync((json as File).filepath);
 
-    console.log(addedFile.cid.toString())
-    console.log(metadata.cid.toString())
-
-    console.log(addedFile)
-    console.log(metadata)
-
-    for await (const buf of ipfs.ls(metadata.cid.toString())){
-      console.log(buf)
-    }
-
     // Return a success response
     res.status(200).json({
-      fileDirectoryCid: addedFile.cid.toString(),
-      metadataDirectoryCid: metadata.cid.toString(),
+      fileCid: addedFile.cid.toString(),
+      metadataCid: metadata.cid.toString(),
       message: `File upload and arguments processed successfully.`
     });
+
+    console.log(metadata)
   }
 
   catch (error) {
