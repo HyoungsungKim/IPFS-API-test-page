@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import axios from 'axios';
-import { Button, ButtonProps } from '@mui/material';
+import { Button, ButtonProps, Typography } from '@mui/material';
 import { FileLoaderButton } from './utils';
 
 import type { IPFSHTTPClient } from "ipfs-http-client";
@@ -16,18 +16,18 @@ function FileUploadAPI(props: FileUploaderProps) {
     const { ipfs, file, setCids } = props;
     const cidsRef = useRef<string[]>([])
 
-    const [tag, setTag] = useState('');
+    const [country, setCountry] = useState('');
     const [response, setResponse] = useState<string>('');
 
     const handleJsonChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setTag(event.target.value);
+        setCountry(event.target.value);
     };
 
     const uploadFile = async () => {
         const formData = new FormData();
         if (file) {
             formData.append('file', file);
-            const jsonBlob = new Blob([JSON.stringify({ json: tag })], { type: 'application/json' });
+            const jsonBlob = new Blob([JSON.stringify({ country: country })], { type: 'application/json' });
             formData.append('json', jsonBlob);
             
             console.log(formData)
@@ -37,6 +37,10 @@ function FileUploadAPI(props: FileUploaderProps) {
                 });
                 console.log(res)
                 setResponse(res.data.metadataCid);
+                
+                cidsRef.current.push(res.data.metadataCid)
+                let updatedCids = [...cidsRef.current];
+                setCids(updatedCids);
             } catch (err: unknown) {
                 setResponse('Error: ' + err);
             }
@@ -45,9 +49,9 @@ function FileUploadAPI(props: FileUploaderProps) {
 
     return (
         <div>
-            <input type="text" placeholder="Tags" value={tag} onChange={handleJsonChange} />
-            <Button onClick={uploadFile}>Upload to IPFS</Button>;
-            <p>{response}</p>
+            <input type="text" placeholder="Country" value={country} onChange={handleJsonChange} />
+            <Button onClick={uploadFile}>Upload to IPFS</Button>
+            <Typography>{response ? "Metadata cid: " + response.slice(0, 7) + "..." : ""}</Typography>
         </div>
     );
 }

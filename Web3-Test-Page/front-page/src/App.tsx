@@ -6,7 +6,11 @@ import axios from 'axios';
 import { ethers } from 'ethers';
 
 import { ConnectWallet } from './common/web3Utils'
-import { CreateTabPanel } from './create/createView';
+import type {Metadata} from './common/web3Utils'
+import { CreateTabPanel } from './create/createUploadTabs';
+import { MintNFTBox } from './create/createMintNFTBox';
+import { ReferNFTIdBox } from './create/createReferNFTCid'
+
 import type { IPFSHTTPClient } from "ipfs-http-client";
 import type { IPFSEntry } from "ipfs-core-types/src/root"
 
@@ -26,6 +30,7 @@ interface CommonProps {
 
 interface ControllerProps extends CommonProps {
 	provider: ethers.BrowserProvider | undefined
+	cids: string[] | undefined
 	setCids: React.Dispatch<React.SetStateAction<string[] | undefined>>
 }
 
@@ -79,7 +84,7 @@ function Layout(): JSX.Element {
 
 			<Grid container >
 				<Grid item xs={6}>
-					<Controller ipfs={ipfs} provider={provider} setIpfs={setIpfs} setCids={setCids} />
+					<Controller ipfs={ipfs} provider={provider} cids={cids} setIpfs={setIpfs} setCids={setCids} />
 				</Grid>
 
 				<Grid item xs={6}>
@@ -92,15 +97,21 @@ function Layout(): JSX.Element {
 }
 
 function Controller(props: ControllerProps): JSX.Element {
-	const { ipfs, provider, setIpfs, setCids } = props
+	const { ipfs, provider, cids, setIpfs, setCids } = props
 	// Use a server IP instead of a docker ip
 	const [ipfsAddress, setIpfsAddress] = useState<string>(process.env.REACT_APP_IPFS_ADDRESS_PORT ? process.env.REACT_APP_IPFS_ADDRESS_PORT : "http://localhost:5001")
 	const [APIserverAddress, setAPIserverAddress] = useState<string>(process.env.REACT_APP_API_SERVER_ADDRESS_PORT ? process.env.REACT_APP_API_SERVER_ADDRESS_PORT : "http://localhost:3005")
 
 	const [ipfsOnline, setIpfsOnline] = useState<boolean>(false)
 	const [APIserverOnline, setAPIserverOnline] = useState<boolean>(false)
+	const [tokenId, setTokenId] = useState<number | undefined>()
+	const [metadata, setMetadata] = useState<Metadata | undefined>()
 
 	const [selectedLanguage, setSelectedLanguage] = useState('kor'); // Default selected language
+
+	const handleTokenIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setTokenId(parseInt(event.target.value, 10));
+	};
 
 	const handleLanguageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setSelectedLanguage(event.target.value);
@@ -143,6 +154,12 @@ function Controller(props: ControllerProps): JSX.Element {
 		});
 	}, [ipfsAddress, APIserverAddress]);
 
+	useEffect(() => {
+		if (metadata) {
+			setSelectedLanguage(metadata.country)
+		}
+	}, [metadata])
+
 	return (
 		<Container component="div" maxWidth="lg" sx={{ mb: 4 }}>
 			<Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
@@ -168,10 +185,27 @@ function Controller(props: ControllerProps): JSX.Element {
 				<CreateTabPanel ipfs={ipfs} setCids={setCids} />
 				<Divider />
 
+				<MintNFTBox web3Provider={provider} cid={cids ? cids[cids.length - 1] : undefined} />
+
+				<Divider />
+
+
+	
+				<ReferNFTIdBox web3Provider={provider} tokenId={tokenId ? tokenId : undefined} setMetadata={setMetadata}/>
+				<Grid item xs={12}>
+					<TextField
+						label="Token Id"
+						value={tokenId}
+						onChange={handleTokenIdChange}
+						fullWidth
+					/>
+				</Grid>
+				<Divider />
+
 				<Box sx={{ borderBottom: 1, borderColor: 'transparent', marginBottom: 0.5, display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-					<RadioGroup sx={{ flexDirection: 'row', alignItems: 'center' }} name="language" value={selectedLanguage} onChange={handleLanguageChange}>
-						<FormControlLabel value="kor" control={<Radio />} label="Korean" />
-						<FormControlLabel value="eng" control={<Radio />} label="English" />
+					<RadioGroup sx={{ flexDirection: 'row', alignItems: 'center' }} name="language" value={metadata? metadata.country : selectedLanguage} onChange={handleLanguageChange}>
+						<FormControlLabel value="kor" control={<Radio />} label="Korean" disabled />
+						<FormControlLabel value="eng" control={<Radio />} label="English" disabled />
 					</RadioGroup>
 				</Box>
 

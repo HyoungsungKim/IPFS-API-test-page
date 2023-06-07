@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 
-import { FileLoaderButton, FileUploaderButton, UploadFileAndMetadataForm } from "./utils";
+import { FileLoaderButton, FileUploaderButton } from "./utils";
 import { FileUploadAPI } from "./API-utils"
 
 import type { IPFSHTTPClient } from "ipfs-http-client";
@@ -71,8 +71,7 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                     <Tab label="Upload File" {...a11yProps(0)} />
-                    <Tab label="Mint NFT" {...a11yProps(1)} />
-                    <Tab label="Upload API test" {...a11yProps(2)} />
+                    <Tab label="Upload File By API" {...a11yProps(1)} />
                 </Tabs>
             </Box>
 
@@ -91,22 +90,7 @@ export function CreateTabPanel(props: CreateTabProps): JSX.Element {
                     </Grid>
                 </Grid>
             </TabPanel>
-
             <TabPanel value={value} index={1}>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} sm={6}>
-                        <FileLoaderButton setFile={setFile} fullWidth />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        {file && ipfs ? (
-                            <UploadFileAndMetadataForm ipfs={ipfs} file={file} setCids={setCids} fullWidth />
-                        ) :
-                            <Button disabled fullWidth>Upload to IPFS</Button>
-                        }
-                    </Grid>
-                </Grid>
-            </TabPanel>
-            <TabPanel value={value} index={2}>
                 <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} sm={6}>
                         <FileLoaderButton setFile={setFile} fullWidth />
