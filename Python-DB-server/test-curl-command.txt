@@ -1,0 +1,19 @@
+create/upload_data
+
+curl -X POST "http://localhost:8000/create/upload_data" -H "Content-Type: application/json" -d '{
+  "api_key": "your_api_key",
+  "content_id": "your_content_id",
+  "name": "your_name",
+  "main_category": "animal",
+  "sub_category": "dog",
+  "attributes": ["cute", "white"]
+}'
+
+curl -X POST "http://localhost:8000/create/upload_data" -H "Content-Type: application/json" -d '{
+  "api_key": "your_api_key",
+  "content_id": "your_content_id",
+  "name": "your_name",
+  "main_category": "your_main_category",
+  "sub_category": "your_sub_category",
+  "sub_sub_category": "your_sub_sub_category"
+}'

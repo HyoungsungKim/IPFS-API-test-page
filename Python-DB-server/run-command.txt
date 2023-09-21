@@ -1,0 +1,1 @@
+root@20c4dab8c45d:/app/src# uvicorn main:app --reload

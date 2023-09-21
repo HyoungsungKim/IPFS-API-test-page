@@ -86,23 +86,38 @@ services:
   stdin_open: true
   tty: true
 
-  
-#  db:
-#   build: rqlite-db/.
-#   working_dir: /app
-#   networks:
-#     ipfs_network:
-#       ipv4_address: 172.20.0.7
-#     #testPage_network:
-#     #  ipv4_address: 172.25.0.7
-#   ports:
-#     # Default port of rqlite is 4001
-#     - 8001:4001
-#   volumes:
-#    - ./rqlite-db/.:/app
-#   stdin_open: true
-#   tty: true
-  
+ python-db-server:
+    build: Python-DB-server/.
+    working_dir: /app
+    networks:
+      ipfs_network:
+        ipv4_address: 172.20.0.6
+      #testPage_network:
+      #  ipv4_address: 172.25.0.5
+    ports:
+      # Default port of rqlite is 4001
+      - 8010:8000
+    volumes:
+    - ./Python-DB-server/.:/app
+    stdin_open: true
+    tty: true
+
+ db:
+  image: keinos/sqlite3
+  working_dir: /app
+  networks:
+    ipfs_network:
+      ipv4_address: 172.20.0.7
+    #testPage_network:
+    #  ipv4_address: 172.25.0.7
+  ports:
+    # Default port of rqlite is 4001
+    - 8001:4001
+  volumes:
+  - ./SQLlite-DB/.:/app
+  stdin_open: true
+  tty: true
+
 
 
 networks:
