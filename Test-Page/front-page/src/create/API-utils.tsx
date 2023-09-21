@@ -37,6 +37,10 @@ function FileUploadAPI(props: FileUploaderProps) {
                 });
                 console.log(res)
                 setResponse(res.data.metadataCid);
+                
+                cidsRef.current.push(res.data.metadataCid)
+                let updatedCids = [...cidsRef.current];
+                setCids(updatedCids);
             } catch (err: unknown) {
                 setResponse('Error: ' + err);
             }
